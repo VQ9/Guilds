@@ -47,6 +47,7 @@ import me.glaremasters.guilds.database.DatabaseAdapter;
 import me.glaremasters.guilds.guild.GuildHandler;
 import me.glaremasters.guilds.guis.GUIHandler;
 import me.glaremasters.guilds.listeners.ArenaListener;
+import me.glaremasters.guilds.listeners.ChatListener;
 import me.glaremasters.guilds.listeners.ClaimSignListener;
 import me.glaremasters.guilds.listeners.EntityListener;
 import me.glaremasters.guilds.listeners.EssentialsChatListener;
@@ -90,6 +91,7 @@ public final class Guilds extends JavaPlugin {
     private Economy economy;
     private Permission permissions;
     private BukkitAudiences adventure;
+    private ChatListener chatListener;
 
     public static Gson getGson() {
         return gson;
@@ -246,12 +248,15 @@ public final class Guilds extends JavaPlugin {
                 new PlayerListener(this, settingsHandler.getMainConf(), guildHandler, permissions),
                 new TicketListener(this, guildHandler, settingsHandler.getMainConf()),
                 new VaultBlacklistListener(this, guildHandler, settingsHandler.getMainConf()),
-                new ArenaListener(this, challengeHandler, settingsHandler.getMainConf()))
+                new ArenaListener(this, challengeHandler, settingsHandler.getMainConf()),
+                new ChatListener(this))
                 .forEach(l -> Bukkit.getPluginManager().registerEvents(l, this));
         // Load the optional listeners
         optionalListeners();
 
         api = new GuildsAPI(guildHandler, cooldownHandler);
+
+        chatListener = new ChatListener(this);
 
         LoggingUtils.info("Ready to go! That only took " + (System.currentTimeMillis() - startingTime) + "ms");
         getServer().getScheduler().scheduleAsyncRepeatingTask(this, () -> {
@@ -370,5 +375,9 @@ public final class Guilds extends JavaPlugin {
 
     public BukkitAudiences getAdventure() {
         return adventure;
+    }
+
+    public ChatListener getChatListener() {
+        return chatListener;
     }
 }

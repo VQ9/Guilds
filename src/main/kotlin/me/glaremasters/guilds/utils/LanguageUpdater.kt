@@ -58,9 +58,12 @@ class LanguageUpdater(internal val plugin: Guilds) {
         val new = YamlConfiguration.loadConfiguration(stream.reader())
         val old = YamlConfiguration.loadConfiguration(outside)
 
-        for (path in new.getKeys(false)) {
-            old.set(path, old.get(path, new.get(path)))
+        for (path in new.getKeys(true)) {
+            if (!old.contains(path)) {
+                old.set(path, old.get(path, new.get(path)))
+            }
         }
         old.save(outside)
+        stream.close()
     }
 }
