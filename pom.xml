@@ -147,6 +147,19 @@
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <relocations>
                                 <relocation>
+                                    <pattern>com.cryptomorin.xseries</pattern>
+                                    <!-- Be sure to change the package below -->
+                                    <shadedPattern>my.plugin.utils</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>me.mattstudios.mfgui</pattern>
+                                    <shadedPattern>me.glaremasters.guilds.mfgui</shadedPattern> <!-- Replace package here here -->
+                                </relocation>
+                                <relocation>
+                                    <pattern>me.mattstudios.mfgui</pattern>
+                                    <shadedPattern>me.glaremasters.guilds.mfgui</shadedPattern> <!-- Replace package here here -->
+                                </relocation>
+                                <relocation>
                                     <pattern>org.bstats</pattern>
                                     <shadedPattern>me.glaremasters.guilds.libs.bstats</shadedPattern>
                                 </relocation>
@@ -289,7 +302,16 @@
             <version>3.7.2</version>
             <scope>provided</scope>
         </dependency>
-
+        <dependency>
+            <groupId>me.mattstudios.utils</groupId>
+            <artifactId>matt-framework-gui</artifactId>
+            <version>2.0.3.3</version> <!-- replace version here -->
+        </dependency>
+        <dependency>
+            <groupId>com.github.cryptomorin</groupId>
+            <artifactId>XSeries</artifactId>
+            <version>7.8.0</version>
+        </dependency>
         <!-- Command framework using annotations -->
         <dependency>
             <groupId>co.aikar</groupId>
