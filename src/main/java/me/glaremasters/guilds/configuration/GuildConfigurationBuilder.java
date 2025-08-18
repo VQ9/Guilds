@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Glare
+ * Copyright (c) 2019 Glare
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package me.glaremasters.guilds.configuration;
 
 import ch.jalu.configme.configurationdata.ConfigurationData;
@@ -29,7 +30,9 @@ import me.glaremasters.guilds.conf.GuildBuffSettings;
 import me.glaremasters.guilds.configuration.sections.*;
 
 /**
- * A builder class that provides static methods for building different types of guild configuration data.
+ * Created by GlareMasters
+ * Date: 1/17/2019
+ * Time: 12:45 PM
  */
 public class GuildConfigurationBuilder {
 
@@ -46,7 +49,7 @@ public class GuildConfigurationBuilder {
      */
     public static ConfigurationData buildConfigurationData() {
         return ConfigurationDataBuilder.createConfiguration(
-                PluginSettings.class, ExperimentalSettings.class, StorageSettings.class, HooksSettings.class, GuildListSettings.class,
+                PluginSettings.class, StorageSettings.class, HooksSettings.class, GuildListSettings.class,
                 VaultPickerSettings.class, GuildVaultSettings.class, GuildInfoSettings.class,
                 GuildInfoMemberSettings.class, GuildSettings.class,
                 WarSettings.class, CooldownSettings.class, CostSettings.class,
@@ -80,4 +83,6 @@ public class GuildConfigurationBuilder {
     public static ConfigurationData buildBuffData() {
         return ConfigurationDataBuilder.createConfiguration(GuildBuffSettings.class);
     }
+
+
 }

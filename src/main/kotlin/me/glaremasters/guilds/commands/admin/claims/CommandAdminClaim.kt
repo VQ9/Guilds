@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Glare
+ * Copyright (c) 2019 Glare
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package me.glaremasters.guilds.commands.admin.claims
 
 import ch.jalu.configme.SettingsManager
@@ -36,6 +37,12 @@ import co.aikar.commands.annotation.Subcommand
 import co.aikar.commands.annotation.Syntax
 import co.aikar.commands.annotation.Values
 import me.glaremasters.guilds.Guilds
+import me.glaremasters.guilds.api.events.GuildClaimEvent
+import me.glaremasters.guilds.api.events.GuildKickEvent
+import me.glaremasters.guilds.api.events.GuildUnclaimAllEvent
+import me.glaremasters.guilds.api.events.GuildUnclaimEvent
+import me.glaremasters.guilds.claim.ClaimEditor
+import me.glaremasters.guilds.claim.ClaimRegionHandler
 import me.glaremasters.guilds.exceptions.ExpectationNotMet
 import me.glaremasters.guilds.guild.Guild
 import me.glaremasters.guilds.guild.GuildHandler
@@ -63,15 +70,16 @@ internal class CommandAdminClaim : BaseCommand() {
 
         val wrapper = WorldGuardWrapper.getInstance()
 
-        if (ClaimUtils.checkAlreadyExist(wrapper, guild)) {
-            throw ExpectationNotMet(Messages.CLAIM__ALREADY_EXISTS)
-        }
+        val claim = ClaimRegionHandler.createClaim(wrapper, guild, player)
+        guild.addGuildClaim(claim)
 
-        if (ClaimUtils.checkOverlap(wrapper, player, settingsManager)) {
-            throw ExpectationNotMet(Messages.CLAIM__OVERLAP)
-        }
+        ClaimEditor.addOwner(wrapper, claim, guild)
+        ClaimEditor.addMembers(wrapper, claim, guild)
+        ClaimEditor.setEnterMessage(wrapper, claim, settingsManager, guild)
+        ClaimEditor.setExitMessage(wrapper, claim, settingsManager, guild)
 
-        ClaimUtils.createClaim(wrapper, guild, player, settingsManager)
+        val event = GuildClaimEvent(player, guild, claim)
+        Bukkit.getPluginManager().callEvent(event)
 
         ClaimUtils.getGuildClaim(wrapper, player, guild).ifPresent { region ->
             ClaimUtils.addOwner(region, guild)
@@ -81,8 +89,8 @@ internal class CommandAdminClaim : BaseCommand() {
         }
 
         currentCommandIssuer.sendInfo(Messages.CLAIM__SUCCESS,
-                "{loc1}", ACFBukkitUtil.formatLocation(ClaimUtils.claimPointOne(player, settingsManager)),
-                "{loc2}", ACFBukkitUtil.formatLocation(ClaimUtils.claimPointTwo(player, settingsManager)))
+                "{loc1}", ACFBukkitUtil.formatLocation(ClaimUtils.claimPointOne(player)),
+                "{loc2}", ACFBukkitUtil.formatLocation(ClaimUtils.claimPointTwo(player)))
     }
 
     @Subcommand("admin unclaim")
@@ -97,11 +105,38 @@ internal class CommandAdminClaim : BaseCommand() {
 
         val wrapper = WorldGuardWrapper.getInstance()
 
-        if (!ClaimUtils.checkAlreadyExist(wrapper, guild)) {
+        if (!ClaimUtils.checkIfHaveClaims(wrapper, guild)) {
             throw (ExpectationNotMet(Messages.UNCLAIM__NOT_FOUND))
         }
 
-        ClaimUtils.removeClaim(wrapper, guild)
-        currentCommandIssuer.sendInfo(Messages.UNCLAIM__SUCCESS)
+        when (option) {
+            "all" -> {
+                ClaimRegionHandler.removeAllClaims(wrapper, guild)
+                guild.clearGuildClaims()
+
+                val event = GuildUnclaimAllEvent(player, guild)
+                Bukkit.getPluginManager().callEvent(event)
+
+                currentCommandIssuer.sendInfo(Messages.UNCLAIM__SUCCESS)
+            }
+            "this" -> {
+                val standingClaim = ClaimUtils.getStandingOnClaim(wrapper, player, guild)
+                if (standingClaim != null) {
+                    ClaimRegionHandler.removeClaim(wrapper, standingClaim)
+                    guild.removeGuildClaim(standingClaim)
+
+                    val event = GuildUnclaimEvent(player, guild, standingClaim)
+                    Bukkit.getPluginManager().callEvent(event)
+
+                    currentCommandIssuer.sendInfo(Messages.UNCLAIM__SUCCESS)
+                }
+                else {
+                    currentCommandIssuer.sendInfo(Messages.UNCLAIM__NOT_FOUND)
+                }
+            }
+            else -> {
+                currentCommandIssuer.sendInfo(Messages.UNCLAIM__NOT_FOUND)
+            }
+        }
     }
 }

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Glare
+ * Copyright (c) 2019 Glare
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package me.glaremasters.guilds.commands.admin.member
 
 import ch.jalu.configme.SettingsManager
@@ -33,6 +34,7 @@ import co.aikar.commands.annotation.Subcommand
 import co.aikar.commands.annotation.Syntax
 import me.glaremasters.guilds.Guilds
 import me.glaremasters.guilds.api.events.GuildKickEvent
+import me.glaremasters.guilds.claim.ClaimEditor
 import me.glaremasters.guilds.exceptions.ExpectationNotMet
 import me.glaremasters.guilds.guild.GuildHandler
 import me.glaremasters.guilds.messages.Messages
@@ -41,6 +43,7 @@ import me.glaremasters.guilds.utils.Constants
 import net.milkbowl.vault.permission.Permission
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+import org.codemc.worldguardwrapper.WorldGuardWrapper
 
 // todo Fix the logic on this because what if you force remove the guild master?
 @CommandAlias("%guilds")
@@ -69,6 +72,14 @@ internal class CommandAdminRemovePlayer : BaseCommand() {
         guildHandler.removeRolePerm(permission, user)
         guildHandler.removeGuildPerms(permission, user)
 
+        if (ClaimUtils.isEnable(settingsManager)) {
+            val wrapper = WorldGuardWrapper.getInstance()
+
+            for (claim in guild.claimedLand) {
+                ClaimEditor.kickMember(wrapper, claim, user)
+            }
+        }
+
         guild.removeMember(user)
         guildHandler.removeFromMemberCache(user.uniqueId)
 
@@ -79,6 +90,6 @@ internal class CommandAdminRemovePlayer : BaseCommand() {
         guildHandler.removeFromChat(user.uniqueId)
 
         currentCommandIssuer.sendInfo(Messages.ADMIN__ADMIN_PLAYER_REMOVED, "{player}", user.name, "{guild}", guild.name)
-        guild.sendMessage(currentCommandManager, Messages.ADMIN__ADMIN_GUILD_REMOVE, "{player}", user.name, "{guild}", guild.name)
+        guild.sendMessage(currentCommandManager, Messages.ADMIN__ADMIN_GUILD_REMOVE, "{player}", user.name)
     }
 }

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Glare
+ * Copyright (c) 2019 Glare
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package me.glaremasters.guilds.commands.member
 
 import ch.jalu.configme.SettingsManager
@@ -36,6 +37,7 @@ import co.aikar.commands.annotation.Subcommand
 import co.aikar.commands.annotation.Syntax
 import me.glaremasters.guilds.Guilds
 import me.glaremasters.guilds.api.events.GuildJoinEvent
+import me.glaremasters.guilds.configuration.sections.PluginSettings
 import me.glaremasters.guilds.cooldowns.Cooldown
 import me.glaremasters.guilds.cooldowns.CooldownHandler
 import me.glaremasters.guilds.exceptions.ExpectationNotMet
@@ -66,7 +68,7 @@ internal class CommandAccept : BaseCommand() {
     @Description("{@@descriptions.accept}")
     @CommandPermission(Constants.BASE_PERM + "accept")
     @CommandCompletion("@joinableGuilds")
-    @Syntax("%guild")
+    @Syntax("<%syntax>")
     fun accept(@Conditions("NoGuild") player: Player, @Flags("other") guild: Guild) {
         val cooldown = Cooldown.Type.Join.name
 
@@ -95,9 +97,12 @@ internal class CommandAccept : BaseCommand() {
         guildHandler.addGuildPerms(permission, player)
         guildHandler.addRolePerm(permission, player)
 
-        if (ClaimUtils.isEnabled(settingsManager)) {
+        if (ClaimUtils.isEnable(settingsManager)) {
             val wrapper = WorldGuardWrapper.getInstance()
-            ClaimUtils.getGuildClaim(wrapper, player, guild).ifPresent { region -> ClaimUtils.addMember(region, player) }
+
+            for (claim in guild.claimedLand) {
+                ClaimEditor.addMember(wrapper, claim, player)
+            }
         }
 
         currentCommandIssuer.sendInfo(Messages.ACCEPT__SUCCESSFUL, "{guild}", guild.name)

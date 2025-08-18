@@ -32,6 +32,7 @@ import co.aikar.commands.annotation.Dependency
 import co.aikar.commands.annotation.Description
 import co.aikar.commands.annotation.Subcommand
 import me.glaremasters.guilds.Guilds
+import me.glaremasters.guilds.claim.ClaimUtils
 import me.glaremasters.guilds.guild.GuildHandler
 import me.glaremasters.guilds.messages.Messages
 import me.glaremasters.guilds.utils.Constants
@@ -50,5 +51,9 @@ internal class CommandReload : BaseCommand() {
         guilds.settingsHandler.buffConf.reload()
         guilds.acfHandler.loadLang()
         currentCommandIssuer.sendInfo(Messages.RELOAD__RELOADED)
+
+        if (ClaimUtils.isEnable(settingsManager)) {
+            ClaimUtils.reload(guilds, settingsManager)
+        }
     }
 }

@@ -23,6 +23,8 @@
  */
 package me.glaremasters.guilds.utils;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -55,6 +57,10 @@ public final class StringUtils {
      */
     public static String color(String input) {
         return ChatColor.translateAlternateColorCodes('&', input);
+    }
+
+    public static Component converter(String input) {
+        return LegacyComponentSerializer.legacySection().deserialize(input);
     }
 
     /**
@@ -119,7 +125,7 @@ public final class StringUtils {
          * here, where in the other one, it grows it.
          */
 
-        StringBuffer newstr = new StringBuffer(html.length());
+        StringBuilder newstr = new StringBuilder(html.length());
 
         boolean saw_backslash = false;
 

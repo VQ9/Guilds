@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Glare
+ * Copyright (c) 2019 Glare
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package me.glaremasters.guilds.commands.admin.manage
 
 import ch.jalu.configme.SettingsManager
 import co.aikar.commands.BaseCommand
-import co.aikar.commands.CommandIssuer
 import co.aikar.commands.annotation.CommandAlias
 import co.aikar.commands.annotation.CommandCompletion
 import co.aikar.commands.annotation.CommandPermission
@@ -45,6 +45,7 @@ import me.glaremasters.guilds.utils.Constants
 import net.milkbowl.vault.permission.Permission
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+import org.codemc.worldguardwrapper.WorldGuardWrapper
 
 @CommandAlias("%guilds")
 internal class CommandAdminTransfer : BaseCommand() {
@@ -66,6 +67,15 @@ internal class CommandAdminTransfer : BaseCommand() {
         }
 
         guild.transferGuildAdmin(transfer, guildHandler, permission)
+        if (ClaimUtils.isEnable(settingsManager)) {
+            val wrapper = WorldGuardWrapper.getInstance()
+
+            for (claim in guild.claimedLand) {
+                ClaimEditor.transferOwner(wrapper, claim, transfer.uniqueId, guild.guildMaster.uuid)
+            }
+        }
+
+        guild.transferGuildAdmin(transfer, guildHandler)
         currentCommandIssuer.sendInfo(Messages.TRANSFER__SUCCESS)
     }
 }

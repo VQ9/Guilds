@@ -28,13 +28,15 @@ import co.aikar.commands.ACFBukkitUtil;
 import co.aikar.commands.ACFUtil;
 import co.aikar.commands.PaperCommandManager;
 import me.glaremasters.guilds.Guilds;
+import me.glaremasters.guilds.claim.ClaimEditor;
+import me.glaremasters.guilds.claim.GuildClaim;
 import me.glaremasters.guilds.configuration.sections.GuildSettings;
 import me.glaremasters.guilds.configuration.sections.GuildVaultSettings;
 import me.glaremasters.guilds.configuration.sections.PluginSettings;
 import me.glaremasters.guilds.configuration.sections.TicketSettings;
 import me.glaremasters.guilds.exceptions.ExpectationNotMet;
 import me.glaremasters.guilds.messages.Messages;
-import me.glaremasters.guilds.utils.ClaimUtils;
+import me.glaremasters.guilds.claim.ClaimUtils;
 import me.glaremasters.guilds.utils.ItemBuilder;
 import me.glaremasters.guilds.utils.LoggingUtils;
 import me.glaremasters.guilds.utils.Serialization;
@@ -56,12 +58,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -196,6 +193,7 @@ public class GuildHandler {
                     .membersToRankup(tierSec.getInt(key + ".members-to-rankup", 5))
                     .maxAllies(tierSec.getInt(key + ".max-allies", 10))
                     .useBuffs(tierSec.getBoolean(key + ".use-buffs", true))
+                    .claimableLand(tierSec.getInt(key + ".claimable-land", 5))
                     .permissions(tierSec.getStringList(key + ".permissions"))
                     .build());
         }
@@ -960,7 +958,9 @@ public class GuildHandler {
 
         if (ClaimUtils.isEnabled(settingsManager)) {
             WorldGuardWrapper wrapper = WorldGuardWrapper.getInstance();
-            ClaimUtils.getGuildClaim(wrapper, player, guild).ifPresent(region -> ClaimUtils.addMember(region, player));
+            for (GuildClaim claim : guild.getClaimedLand()) {
+                ClaimEditor.addMember(wrapper, claim, player);
+            }
         }
 
         manager.getCommandIssuer(player).sendInfo(Messages.CODES__JOINED, "{guild}", guild.getName());
